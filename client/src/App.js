@@ -4,18 +4,31 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
-import Login from './pages/Login';
-import NoMatch from './pages/NoMatch';
-import SingleThought from './pages/SingleThought';
-import Profile from './pages/Profile';
-import Signup from './pages/Signup';
+import Login from './pages/Login'
+import NoMatch from './pages/NoMatch'
+import SingleThought from './pages/SingleThought'
+import Profile from './pages/Profile'
+import Signup from './pages/Signup'
+import { setContext } from '@apollo/client/link/context'
 
 const httpLink = createHttpLink({
   uri: '/graphql',
 })
 
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('id_token')
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  }
+})
+// We need to combine the authLink and httpLink objects so that 
+// every request retrieves the token and sets the request 
+// headers before making the request to the API.
 const client = new ApolloClient({
-  link: httpLink,
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 })
 
